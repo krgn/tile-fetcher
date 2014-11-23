@@ -28,8 +28,14 @@ main = do
 get :: [String] -> IO ()
 get = mapM_ get'
   where
-    get' url = let loc = splitPath $ parseUrl url
-               in fetch url >>= L.writeFile (baseDir ++ dest loc)
+    get' url = do
+      let loc = splitPath $ parseUrl url
+          pth = (baseDir ++ dest loc)
+      exists <- doesFileExist pth
+
+      if exists
+        then putStrLn $ pth ++ " exists already. skipping.."
+        else fetch url >>= L.writeFile (baseDir ++ dest loc)
 
     
 dest :: [String] -> String
@@ -72,10 +78,6 @@ mkdirs _ = return ()
 
 baseDir = "tiles/"
 
-
-maxParallel = 8
-
-              
 -- | partition a let into p parts
 partition p xs =
   let partsize = (length xs) `div` p
